@@ -972,7 +972,7 @@ window.MANGO_MAME = {"titre":"Mango Mame","sous_titre":"Mon grand atelier de col
     const petit = '<p class="mm-gate__small">Tu as déjà installé Mango Mame ? Ferme cette page et ouvre l’application depuis son icône, sur ton écran d’accueil.</p>';
     const etapes = (l) => '<ol class="mm-gate__steps">' + l.map((t, i) => '<li><b>' + (i + 1) + '</b><span>' + t + '</span></li>').join("") + '</ol>';
     const copier = '<button class="mm-gate__btn mm-gate__btn--clair" id="mm-copier" type="button">🔗 Copier le lien</button><p class="mm-gate__status" id="mm-statut" role="status"></p>';
-    let evt = null, attenteFinie = false, fini = false;
+    let evt = null, fini = false, etape = "accueil";
 
     function lierCopier() {
       const b = $("mm-copier"); if (!b) return;
@@ -982,39 +982,41 @@ window.MANGO_MAME = {"titre":"Mango Mame","sous_titre":"Mon grand atelier de col
         catch (e) { window.prompt("Copie ce lien :", url); }
       };
     }
+    const BOUTON = '<button class="mm-gate__btn" id="mm-installer" type="button">📲 Installer l’application</button><p class="mm-gate__status" id="mm-statut" role="status"></p>';
+    /* étapes à la main : seulement APRÈS le toucher sur « Installer », quand le navigateur n'a pas de bouton d'installation (iPhone, certains navigateurs) */
+    function guide() {
+      etape = "guide";
+      if (ios) {
+        titre.textContent = "Installe Mango Mame en 3 touches";
+        corps.innerHTML = '<p>Sur iPhone et iPad, Apple demande de faire ces 3 touches soi-même :</p>' +
+          etapes(['Touche <strong>Partager</strong> ' + SHARE + ' (en bas de l’écran, ou en haut à droite)', 'Fais défiler et touche <strong>« Sur l’écran d’accueil »</strong> ' + PLUS, 'Touche <strong>Ajouter</strong>, puis ouvre <strong>Mango Mame</strong> depuis ton écran d’accueil']) +
+          '<p class="mm-gate__small">Tu ne vois pas « Sur l’écran d’accueil » ? Ouvre cette page dans Safari.</p>' + copier + petit;
+      } else {
+        titre.textContent = "Installe Mango Mame";
+        corps.innerHTML = '<p>Ton navigateur n’a pas proposé le bouton d’installation. Fais-le avec son menu :</p>' +
+          etapes(['Touche le menu <strong>⋮</strong> de ton navigateur (sur ordinateur : l’icône d’installation dans la barre d’adresse)', 'Choisis <strong>« Installer l’application »</strong> ou <strong>« Ajouter à l’écran d’accueil »</strong>', 'Ouvre <strong>Mango Mame</strong> depuis ton écran d’accueil']) + copier + petit;
+      }
+      lierCopier();
+    }
     function afficher() {
       if (fini) return;
-      titre.textContent = "Installe Mango Mame pour colorier";
       if (dansAppli) {
         titre.textContent = "Ouvre Mango Mame dans ton navigateur";
         corps.innerHTML = '<p>Cette page est ouverte dans une autre application (Facebook, Instagram, WhatsApp…). Pour installer Mango Mame, il faut l’ouvrir dans ' + (ios ? 'Safari' : 'Chrome') + '.</p>' +
           etapes(['Touche les trois points <strong>⋮</strong> ou <strong>···</strong> en haut', 'Choisis <strong>« Ouvrir dans le navigateur »</strong>']) + copier + petit;
         lierCopier(); return;
       }
-      if (ios) {
-        corps.innerHTML = '<p>Pour continuer, ajoute Mango Mame sur ton écran d’accueil. C’est gratuit et ça prend 10 secondes.</p>' +
-          etapes(['Touche <strong>Partager</strong> ' + SHARE + ' en bas de l’écran', 'Fais défiler et touche <strong>« Sur l’écran d’accueil »</strong> ' + PLUS, 'Touche <strong>Ajouter</strong> en haut à droite', 'Ouvre <strong>Mango Mame</strong> depuis ton écran d’accueil']) +
-          '<p class="mm-gate__small">Tu ne vois pas « Sur l’écran d’accueil » ? Ouvre cette page dans Safari.</p>' + copier + petit;
-        lierCopier(); return;
-      }
-      if (evt) {
-        corps.innerHTML = '<p>Pour continuer, ajoute l’application sur ton écran d’accueil. C’est gratuit, ça prend 10 secondes, et elle marche même sans Internet !</p><button class="mm-gate__btn" id="mm-installer" type="button">📲 Installer l’application</button><p class="mm-gate__status" id="mm-statut" role="status"></p>' + petit;
-        $("mm-installer").onclick = async () => {
-          const e = evt; if (!e) return;
-          try {
-            e.prompt(); const r = await e.userChoice; evt = null;
-            if (r && r.outcome === "accepted") $("mm-statut").textContent = "Installation en cours… ✨";
-            else { attenteFinie = true; afficher(); }
-          } catch (err) { evt = null; attenteFinie = true; afficher(); }
-        };
-        return;
-      }
-      if (attenteFinie) {
-        corps.innerHTML = '<p>Pour continuer, ajoute Mango Mame sur ton écran d’accueil.</p>' +
-          etapes(['Touche le menu <strong>⋮</strong> de ton navigateur (sur ordinateur : l’icône d’installation dans la barre d’adresse)', 'Choisis <strong>« Installer l’application »</strong> ou <strong>« Ajouter à l’écran d’accueil »</strong>', 'Ouvre <strong>Mango Mame</strong> depuis ton écran d’accueil']) + copier + petit;
-        lierCopier(); return;
-      }
-      corps.innerHTML = '<p>Pour continuer, ajoute l’application sur ton écran d’accueil. C’est gratuit et ça prend 10 secondes.</p><button class="mm-gate__btn" type="button" disabled>Préparation…</button>' + petit;
+      if (etape === "guide") { guide(); return; }
+      titre.textContent = "Installe Mango Mame pour colorier";
+      corps.innerHTML = '<p>Pour continuer, installe l’application. C’est gratuit, ça prend 10 secondes, et elle marche même sans Internet !</p>' + BOUTON + petit;
+      $("mm-installer").onclick = async () => {
+        const e = evt;
+        if (!e) { guide(); return; }
+        try {
+          e.prompt(); const r = await e.userChoice; evt = null;
+          $("mm-statut").textContent = (r && r.outcome === "accepted") ? "Installation en cours… ✨" : "Pas d’installation pour l’instant. Touche encore le bouton pour voir comment faire.";
+        } catch (err) { evt = null; guide(); }
+      };
     }
     /* écran « Ouvrir l'application » : un seul bouton, pas d'autre choix que d'aller dans l'application */
     function ecranOuvrir(nouveau) {
@@ -1029,10 +1031,13 @@ window.MANGO_MAME = {"titre":"Mango Mame","sous_titre":"Mon grand atelier de col
         $("mm-statut").textContent = "Ouverture de l’application…";
         setTimeout(() => { const s = $("mm-statut"); if (s) s.textContent = "Rien ne s’est ouvert ? Touche l’icône Mango Mame sur ton écran d’accueil."; }, 2500);
       });
-      $("mm-reinstaller").addEventListener("click", (e) => { e.preventDefault(); try { localStorage.removeItem("mm-installe"); } catch (x) {} fini = false; afficher(); });
+      $("mm-reinstaller").addEventListener("click", (e) => { e.preventDefault(); try { localStorage.removeItem("mm-installe"); } catch (x) {} fini = false; etape = "accueil"; afficher(); });
       if (nouveau) confettis();
     }
-    function installeMaintenant() { ecrire("mm-installe", "1"); ecranOuvrir(true); }
+    function installeMaintenant() {
+      ecrire("mm-installe", "1"); ecranOuvrir(true);
+      setTimeout(() => { try { const o = $("mm-ouvrir"); if (o) o.click(); } catch (e) {} }, 900);
+    }
     /* l'appli est-elle déjà installée sur cet appareil ? (Android/ordinateur) */
     async function dejaInstallee() {
       try {
@@ -1040,12 +1045,11 @@ window.MANGO_MAME = {"titre":"Mango Mame","sous_titre":"Mon grand atelier de col
       } catch (e) {}
       return lire("mm-installe") === "1";
     }
-    window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); evt = e; afficher(); });
+    window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); evt = e; });
     window.addEventListener("appinstalled", installeMaintenant);
     try { window.matchMedia("(display-mode: standalone)").addEventListener("change", (e) => { if (e.matches) ouvrir(); }); } catch (e) {}
     afficher();
     if (!ios && !dansAppli) dejaInstallee().then((oui) => { if (oui && !fini) ecranOuvrir(false); });
-    setTimeout(() => { if (!evt && !fini) { attenteFinie = true; afficher(); } }, 5000);
   } catch (err) { ouvrir(); }
 })();
 </script>
