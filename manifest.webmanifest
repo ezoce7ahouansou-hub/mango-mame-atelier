@@ -9,6 +9,11 @@
   "orientation": "any",
   "background_color": "#fff7e7",
   "theme_color": "#fff7e7",
+  "handle_links": "preferred",
+  "launch_handler": { "client_mode": "navigate-existing" },
+  "related_applications": [
+    { "platform": "webapp", "url": "https://ezoce7ahouansou-hub.github.io/mango-mame-atelier/manifest.webmanifest" }
+  ],
   "icons": [
     { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
