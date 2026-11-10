@@ -95,6 +95,34 @@ button:focus-visible{outline:3px solid #4b9b70;outline-offset:3px}
 .dialog-button.light{background:#f1eee5}.dialog-button.primary{background:var(--yellow)}
 .toast{position:fixed;z-index:40;bottom:18px;left:50%;transform:translate(-50%,20px);background:#344a3a;color:#fff;padding:10px 16px;border-radius:999px;font-size:12px;font-weight:700;opacity:0;pointer-events:none;transition:.2s}
 .toast.show{opacity:1;transform:translate(-50%,0)}
+/* ---- installation obligatoire + félicitations ---- */
+.mm-gate{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:18px;overflow-y:auto;background:radial-gradient(120% 80% at 50% 0%,#ffe6ad 0%,#fff7e7 62%)}
+.mm-gate[hidden],.mm-fete[hidden]{display:none}
+.mm-gate__card{width:100%;max-width:460px;margin:auto;background:#fff;border-radius:30px;padding:26px 22px 22px;text-align:center;box-shadow:0 26px 54px -26px rgba(80,64,35,.5)}
+.mm-gate__ic{width:92px;height:92px;border-radius:24px;margin:0 auto 14px;display:block;box-shadow:0 10px 22px -10px rgba(80,64,35,.5)}
+.mm-gate h1{margin:0;font-size:clamp(1.35rem,5.2vw,1.8rem);line-height:1.2;color:#334238}
+.mm-gate p{margin:10px 0 0;color:#5d6a60;font-size:1.02rem;line-height:1.5}
+.mm-gate__btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:60px;margin-top:20px;border:0;border-radius:999px;background:#c8501e;color:#fff;font-weight:800;font-size:1.1rem;box-shadow:0 12px 24px -12px rgba(150,54,15,.85),inset 0 -3px 0 rgba(0,0,0,.18);transition:transform .2s}
+.mm-gate__btn:active{transform:scale(.98)}
+.mm-gate__btn[disabled]{background:#a99d92;box-shadow:none}
+.mm-gate__btn--clair{background:#fff;color:#334238;border:2px solid #efe7d6;box-shadow:none;min-height:52px;font-size:1rem}
+.mm-gate__steps{margin:18px 0 0;padding:0;list-style:none;text-align:left;display:grid;gap:10px}
+.mm-gate__steps li{display:flex;gap:12px;align-items:center;background:#fff7e7;border-radius:16px;padding:12px 14px;font-weight:700;font-size:.98rem;line-height:1.35}
+.mm-gate__steps b{flex:none;width:30px;height:30px;border-radius:50%;background:#3d7653;color:#fff;display:grid;place-items:center;font-size:.95rem}
+.mm-gate__steps svg{display:inline-block;vertical-align:-6px;width:24px;height:24px;color:#1976d2}
+.mm-gate p.mm-gate__small{margin-top:16px;font-size:.84rem;color:#788078}
+.mm-gate p.mm-gate__status{min-height:1.4em;margin-top:12px;font-weight:800;color:#3d7653}
+.mm-gate__ok{font-size:3.4rem;line-height:1;margin-top:8px}
+.mm-fete{position:fixed;inset:0;z-index:90;display:grid;place-items:center;padding:20px;pointer-events:none}
+.mm-fete__box{pointer-events:auto;max-width:360px;text-align:center;background:#fff;border-radius:28px;padding:22px 26px;box-shadow:0 26px 60px -20px rgba(60,45,20,.55),0 0 0 6px #ffc928;animation:mm-pop .5s cubic-bezier(.2,1.4,.4,1)}
+.mm-fete__e{font-size:3.2rem;line-height:1}
+.mm-fete__t{margin:6px 0 0;font-size:1.7rem;font-weight:900;color:#c8501e}
+.mm-fete__s{margin:6px 0 0;font-size:1.02rem;font-weight:700;color:#334238;line-height:1.4}
+@keyframes mm-pop{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
+.mm-conf{position:fixed;top:-14px;z-index:95;width:10px;height:16px;border-radius:3px;pointer-events:none;animation:mm-fall linear forwards}
+@keyframes mm-fall{to{transform:translateY(112vh) rotate(720deg);opacity:.9}}
+@media (prefers-reduced-motion:reduce){.mm-fete__box{animation:none}.mm-conf{display:none}}
+
 @media(max-width:850px){
  #app{grid-template-columns:78px minmax(0,1fr) 76px;grid-template-rows:68px minmax(0,1fr)}
  .topbar{padding:7px 9px;gap:8px}.top-icon{width:40px;height:40px}
@@ -468,6 +496,8 @@ button{min-height:36px}
     <div class="dialog-actions"><button class="dialog-button light" id="conf-non">Non, je garde</button><button class="dialog-button primary" id="conf-oui">Oui, effacer</button></div>
   </section>
 </div>
+<div class="mm-gate" id="mm-gate" role="dialog" aria-modal="true" aria-labelledby="mm-gate-t"><div class="mm-gate__card"><img class="mm-gate__ic" src="icon-192.png" alt="" width="92" height="92"><h1 id="mm-gate-t">Installe Mango Mame pour colorier</h1><div id="mm-gate-body"><p>Chargement…</p></div></div></div>
+<div class="mm-fete" id="mm-fete" hidden role="status" aria-live="polite"><div class="mm-fete__box" id="mm-fete-box"><div class="mm-fete__e" id="mm-fete-e">🥭</div><p class="mm-fete__t" id="mm-fete-t"></p><p class="mm-fete__s" id="mm-fete-s"></p></div></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script>
 // Illustrations dérivées des images originales du livre Mango Mame.
@@ -868,5 +898,121 @@ window.MANGO_MAME = {"titre":"Mango Mame","sous_titre":"Mon grand atelier de col
   });
 })();
 
+</script>
+<script>
+/* Mango Mame — installation obligatoire sur l'écran d'accueil + messages de félicitations.
+   Pour tester sans installer : ajoutez ?test=1 à l'adresse (ce navigateur saute alors l'installation). ?test=0 pour l'annuler. */
+(() => {
+  "use strict";
+  const gate = document.getElementById("mm-gate"), app = document.getElementById("app");
+  const ouvrir = () => { gate.hidden = true; if (app) app.removeAttribute("inert"); };
+  try {
+    const $ = (id) => document.getElementById(id);
+    const ua = navigator.userAgent || "";
+    const dm = (q) => { try { return window.matchMedia(q).matches; } catch (e) { return false; } };
+    const lire = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+    const ecrire = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+    try { const t = new URLSearchParams(location.search).get("test"); if (t === "1") ecrire("mm-test", "1"); if (t === "0") localStorage.removeItem("mm-test"); } catch (e) {}
+    const reduit = dm("(prefers-reduced-motion: reduce)");
+    const installee = () => dm("(display-mode: standalone)") || dm("(display-mode: fullscreen)") || dm("(display-mode: minimal-ui)") || navigator.standalone === true;
+    const ios = /iphone|ipad|ipod/i.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    const dansAppli = /FBAN|FBAV|FB_IAB|Instagram|Snapchat|TikTok|musical_ly|WhatsApp|Line\/|; wv\)/i.test(ua);
+
+    /* ---------- messages de félicitations ---------- */
+    let minuteur = null;
+    function confettis() {
+      if (reduit) return;
+      const couleurs = ["#F44336", "#FF9800", "#FFC107", "#8BC34A", "#29B6F6", "#8E24AA", "#EC407A"];
+      for (let i = 0; i < 46; i++) {
+        const s = document.createElement("span"); s.className = "mm-conf";
+        s.style.left = (Math.random() * 100) + "vw"; s.style.background = couleurs[i % couleurs.length];
+        s.style.animationDuration = (2.2 + Math.random() * 1.8) + "s"; s.style.animationDelay = (Math.random() * 0.5) + "s";
+        document.body.appendChild(s); setTimeout(() => s.remove(), 4800);
+      }
+    }
+    function fete(emoji, titre, sous, ms) {
+      $("mm-fete-e").textContent = emoji; $("mm-fete-t").textContent = titre; $("mm-fete-s").textContent = sous;
+      const f = $("mm-fete"); f.hidden = false; confettis();
+      clearTimeout(minuteur); minuteur = setTimeout(() => { f.hidden = true; }, ms || 3200);
+    }
+    $("mm-fete-box").addEventListener("click", () => { clearTimeout(minuteur); $("mm-fete").hidden = true; });
+    const TITRES = ["Bravo !", "Magnifique !", "Super travail !", "Quel bel artiste !"];
+    const SOUS = ["Ton dessin est enregistré.", "Quel beau coloriage !", "Mame et Kiné adorent tes couleurs !", "Tes couleurs sont superbes !"];
+    let n = 0;
+    function felicitationDessin() { const i = n++; fete("🎨", TITRES[i % TITRES.length], SOUS[i % SOUS.length], 3200); }
+    ["btn-enregistrer", "btn-telecharger"].forEach((id) => { const b = $(id); if (b) b.addEventListener("click", () => setTimeout(felicitationDessin, 350)); });
+
+    /* ---------- installation obligatoire ---------- */
+    if (installee() || lire("mm-test") === "1") {
+      ouvrir();
+      if (installee() && !lire("mm-bienvenue")) {
+        ecrire("mm-bienvenue", "1");
+        setTimeout(() => fete("🎉", "Bravo !", "Tu as installé Mango Mame. Tu peux colorier, même sans Internet !", 5200), 700);
+      }
+      return;
+    }
+    if (app) app.setAttribute("inert", "");
+    const SHARE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3M8 7l4-4 4 4"/><path d="M6 11H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-1"/></svg>';
+    const PLUS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M12 8v8M8 12h8"/></svg>';
+    const corps = $("mm-gate-body"), titre = $("mm-gate-t");
+    const petit = '<p class="mm-gate__small">Tu as déjà installé Mango Mame ? Ferme cette page et ouvre l’application depuis son icône, sur ton écran d’accueil.</p>';
+    const etapes = (l) => '<ol class="mm-gate__steps">' + l.map((t, i) => '<li><b>' + (i + 1) + '</b><span>' + t + '</span></li>').join("") + '</ol>';
+    const copier = '<button class="mm-gate__btn mm-gate__btn--clair" id="mm-copier" type="button">🔗 Copier le lien</button><p class="mm-gate__status" id="mm-statut" role="status"></p>';
+    let evt = null, attenteFinie = false, fini = false;
+
+    function lierCopier() {
+      const b = $("mm-copier"); if (!b) return;
+      b.onclick = async () => {
+        const url = location.href.split("?")[0];
+        try { await navigator.clipboard.writeText(url); $("mm-statut").textContent = "Lien copié ! Colle-le dans ton navigateur."; }
+        catch (e) { window.prompt("Copie ce lien :", url); }
+      };
+    }
+    function afficher() {
+      if (fini) return;
+      titre.textContent = "Installe Mango Mame pour colorier";
+      if (dansAppli) {
+        titre.textContent = "Ouvre Mango Mame dans ton navigateur";
+        corps.innerHTML = '<p>Cette page est ouverte dans une autre application (Facebook, Instagram, WhatsApp…). Pour installer Mango Mame, il faut l’ouvrir dans ' + (ios ? 'Safari' : 'Chrome') + '.</p>' +
+          etapes(['Touche les trois points <strong>⋮</strong> ou <strong>···</strong> en haut', 'Choisis <strong>« Ouvrir dans le navigateur »</strong>']) + copier + petit;
+        lierCopier(); return;
+      }
+      if (ios) {
+        corps.innerHTML = '<p>Pour continuer, ajoute Mango Mame sur ton écran d’accueil. C’est gratuit et ça prend 10 secondes.</p>' +
+          etapes(['Touche <strong>Partager</strong> ' + SHARE + ' en bas de l’écran', 'Fais défiler et touche <strong>« Sur l’écran d’accueil »</strong> ' + PLUS, 'Touche <strong>Ajouter</strong> en haut à droite', 'Ouvre <strong>Mango Mame</strong> depuis ton écran d’accueil']) +
+          '<p class="mm-gate__small">Tu ne vois pas « Sur l’écran d’accueil » ? Ouvre cette page dans Safari.</p>' + copier + petit;
+        lierCopier(); return;
+      }
+      if (evt) {
+        corps.innerHTML = '<p>Pour continuer, ajoute l’application sur ton écran d’accueil. C’est gratuit, ça prend 10 secondes, et elle marche même sans Internet !</p><button class="mm-gate__btn" id="mm-installer" type="button">📲 Installer l’application</button><p class="mm-gate__status" id="mm-statut" role="status"></p>' + petit;
+        $("mm-installer").onclick = async () => {
+          const e = evt; if (!e) return;
+          try {
+            e.prompt(); const r = await e.userChoice; evt = null;
+            if (r && r.outcome === "accepted") $("mm-statut").textContent = "Installation en cours… ✨";
+            else { attenteFinie = true; afficher(); }
+          } catch (err) { evt = null; attenteFinie = true; afficher(); }
+        };
+        return;
+      }
+      if (attenteFinie) {
+        corps.innerHTML = '<p>Pour continuer, ajoute Mango Mame sur ton écran d’accueil.</p>' +
+          etapes(['Touche le menu <strong>⋮</strong> de ton navigateur (sur ordinateur : l’icône d’installation dans la barre d’adresse)', 'Choisis <strong>« Installer l’application »</strong> ou <strong>« Ajouter à l’écran d’accueil »</strong>', 'Ouvre <strong>Mango Mame</strong> depuis ton écran d’accueil']) + copier + petit;
+        lierCopier(); return;
+      }
+      corps.innerHTML = '<p>Pour continuer, ajoute l’application sur ton écran d’accueil. C’est gratuit et ça prend 10 secondes.</p><button class="mm-gate__btn" type="button" disabled>Préparation…</button>' + petit;
+    }
+    function installeMaintenant() {
+      fini = true; titre.textContent = "Bravo ! Mango Mame est installée !";
+      corps.innerHTML = '<div class="mm-gate__ok" aria-hidden="true">🎉</div><p>L’application est maintenant sur ton écran d’accueil. <strong>Ferme cette page</strong> et ouvre <strong>Mango Mame</strong> avec son icône pour commencer à colorier.</p>';
+      confettis();
+    }
+    window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); evt = e; afficher(); });
+    window.addEventListener("appinstalled", installeMaintenant);
+    try { window.matchMedia("(display-mode: standalone)").addEventListener("change", (e) => { if (e.matches) ouvrir(); }); } catch (e) {}
+    afficher();
+    setTimeout(() => { if (!evt && !fini) { attenteFinie = true; afficher(); } }, 5000);
+  } catch (err) { ouvrir(); }
+})();
 </script>
 </body></html>
