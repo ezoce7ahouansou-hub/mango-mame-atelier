@@ -921,7 +921,7 @@ window.MANGO_MAME = {"titre":"Mango Mame","sous_titre":"Mon grand atelier de col
 </script>
 <script>
 /* Mango Mame — installation obligatoire sur l'écran d'accueil + messages de félicitations.
-   Pour tester sans installer : ajoutez ?test=1 à l'adresse (ce navigateur saute alors l'installation). ?test=0 pour l'annuler. */
+   Pour tester sans installer : ajoutez ?test=1 à l'adresse (valable seulement pour l'onglet en cours). ?diag=1 affiche un récapitulatif technique. */
 (() => {
   "use strict";
   const gate = document.getElementById("mm-gate"), app = document.getElementById("app");
@@ -932,7 +932,8 @@ window.MANGO_MAME = {"titre":"Mango Mame","sous_titre":"Mon grand atelier de col
     const dm = (q) => { try { return window.matchMedia(q).matches; } catch (e) { return false; } };
     const lire = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
     const ecrire = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
-    try { const t = new URLSearchParams(location.search).get("test"); if (t === "1") ecrire("mm-test", "1"); if (t === "0") localStorage.removeItem("mm-test"); } catch (e) {}
+    try { localStorage.removeItem("mm-test"); const t = new URLSearchParams(location.search).get("test"); if (t === "1") sessionStorage.setItem("mm-test", "1"); if (t === "0") sessionStorage.removeItem("mm-test"); } catch (e) {}
+    const testEnCours = () => { try { return sessionStorage.getItem("mm-test") === "1"; } catch (e) { return false; } };
     /* si une nouvelle version de l'application vient d'arriver pendant les premières secondes, on recharge une fois pour l'afficher */
     try {
       if ("serviceWorker" in navigator) {
@@ -980,8 +981,40 @@ window.MANGO_MAME = {"titre":"Mango Mame","sous_titre":"Mon grand atelier de col
       } catch (e) {}
     }
 
+    /* ---------- ?diag=1 : récapitulatif technique (à photographier) ---------- */
+    try {
+      if (new URLSearchParams(location.search).get("diag") === "1") {
+        let recu = "pas encore";
+        window.addEventListener("beforeinstallprompt", () => { recu = "OUI"; maj(); });
+        const boite = document.createElement("pre");
+        boite.style.cssText = "position:fixed;left:6px;right:6px;bottom:6px;z-index:300;margin:0;padding:10px;max-height:46vh;overflow:auto;background:rgba(20,20,20,.92);color:#9fe870;font:11px/1.35 ui-monospace,Menlo,monospace;white-space:pre-wrap;border-radius:10px";
+        document.body.appendChild(boite);
+        const maj = async () => {
+          let apps = "non géré par ce navigateur";
+          try { if (navigator.getInstalledRelatedApps) apps = "trouvées : " + (await navigator.getInstalledRelatedApps()).length; } catch (e) { apps = "erreur"; }
+          let caches_ = "non";
+          try { caches_ = (await caches.keys()).join(", ") || "aucun"; } catch (e) {}
+          boite.textContent = [
+            "DIAGNOSTIC MANGO MAME",
+            "navigateur : " + (ios ? "iPhone/iPad" : /android/i.test(ua) ? "Android" : "ordinateur") + " / " + (/CriOS/.test(ua) ? "Chrome iOS" : /FxiOS/.test(ua) ? "Firefox iOS" : /EdgiOS/.test(ua) ? "Edge iOS" : /SamsungBrowser/i.test(ua) ? "Samsung" : /Chrome/.test(ua) ? "Chrome" : /Safari/.test(ua) ? "Safari" : "autre") + " " + (((ua.match(/(?:Version|CriOS|Chrome)\/(\d+)/) || [])[1]) || ""),
+            "mode : " + (installee() ? "APPLICATION INSTALLÉE" : "navigateur"),
+            "écran affiché : " + ((document.getElementById("mm-gate") || {}).hidden ? "l'atelier (sans installation)" : (document.getElementById("mm-gate-t") || {}).textContent),
+            "bouton d'installation du navigateur : " + recu,
+            "appli déjà installée (détection) : " + apps,
+            "réglage mm-installe : " + lire("mm-installe"),
+            "réglage mm-bienvenue : " + lire("mm-bienvenue"),
+            "service worker : " + ("serviceWorker" in navigator ? (navigator.serviceWorker.controller ? "actif" : "présent, pas encore actif") : "NON SUPPORTÉ"),
+            "copies : " + caches_,
+            "version des dessins : " + ((window.MANGO_MAME || {}).version || "?"),
+            "adresse : " + location.pathname + location.search
+          ].join("\n");
+        };
+        maj(); setTimeout(maj, 3000); setTimeout(maj, 8000);
+      }
+    } catch (e) {}
+
     /* ---------- installation obligatoire ---------- */
-    if (installee() || lire("mm-test") === "1") {
+    if (installee() || testEnCours()) {
       ouvrir();
       if (document.readyState === "complete") precharger(); else window.addEventListener("load", precharger);
       if (installee() && !lire("mm-bienvenue")) {
