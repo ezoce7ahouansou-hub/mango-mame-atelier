@@ -2,7 +2,7 @@
    Au premier chargement (avec Internet), l'application est copiée dans l'appareil.
    Ensuite elle s'ouvre sans Internet. Pour publier une nouvelle version de l'application,
    changez le numéro dans VERSION ci-dessous : les appareils se mettent alors à jour à leur prochaine connexion. */
-const VERSION = "v9";
+const VERSION = "v10";
 const CACHE = "mango-mame-atelier-" + VERSION;
 const FICHIERS = ["./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png"];
 

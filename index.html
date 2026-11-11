@@ -114,6 +114,15 @@ button:focus-visible{outline:3px solid #4b9b70;outline-offset:3px}
 .mm-gate p.mm-gate__status{min-height:1.4em;margin-top:12px;font-weight:800;color:#3d7653}
 .mm-gate__ok{font-size:3.4rem;line-height:1;margin-top:8px}
 a.mm-gate__btn{text-decoration:none}
+.mm-gate--guide .mm-gate__ic{display:none}
+.mm-fleche{position:fixed;z-index:101;width:64px;height:64px;color:#c8501e;pointer-events:none;filter:drop-shadow(0 4px 6px rgba(0,0,0,.28))}
+.mm-fleche svg{display:block;width:100%;height:100%;animation:mm-rebond 1s ease-in-out infinite}
+.mm-fleche--bas-centre{left:50%;margin-left:-32px;bottom:calc(env(safe-area-inset-bottom,0px) + 4px)}
+.mm-fleche--bas-droite{right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 4px)}
+.mm-fleche--haut-droite{right:12px;top:calc(env(safe-area-inset-top,0px) + 4px);transform:rotate(180deg)}
+@keyframes mm-rebond{0%,100%{transform:translateY(0)}50%{transform:translateY(12px)}}
+@media (orientation:landscape) and (max-height:520px){.mm-fleche{display:none}}
+@media (prefers-reduced-motion:reduce){.mm-fleche svg{animation:none}}
 .mm-gate p.mm-gate__small a{color:#3d7653;font-weight:800}
 .mm-fete{position:fixed;inset:0;z-index:90;display:grid;place-items:center;padding:20px;pointer-events:none}
 .mm-fete__box{pointer-events:auto;max-width:360px;text-align:center;background:#fff;border-radius:28px;padding:22px 26px;box-shadow:0 26px 60px -20px rgba(60,45,20,.55),0 0 0 6px #ffc928;animation:mm-pop .5s cubic-bezier(.2,1.4,.4,1)}
@@ -907,7 +916,7 @@ window.MANGO_MAME = {"titre":"Mango Mame","sous_titre":"Mon grand atelier de col
 (() => {
   "use strict";
   const gate = document.getElementById("mm-gate"), app = document.getElementById("app");
-  const ouvrir = () => { gate.hidden = true; if (app) app.removeAttribute("inert"); };
+  const ouvrir = () => { gate.hidden = true; if (app) app.removeAttribute("inert"); document.querySelectorAll(".mm-fleche").forEach((e) => e.remove()); };
   try {
     const $ = (id) => document.getElementById(id);
     const ua = navigator.userAgent || "";
@@ -984,17 +993,48 @@ window.MANGO_MAME = {"titre":"Mango Mame","sous_titre":"Mon grand atelier de col
     }
     const BOUTON = '<button class="mm-gate__btn" id="mm-installer" type="button">📲 Installer l’application</button><p class="mm-gate__status" id="mm-statut" role="status"></p>';
     /* étapes à la main : seulement APRÈS le toucher sur « Installer », quand le navigateur n'a pas de bouton d'installation (iPhone, certains navigateurs) */
+    /* ---------- flèche animée vers le bouton du navigateur (selon l'appareil) ---------- */
+    const ipad = /ipad/i.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    const iphone = /iphone|ipod/i.test(ua);
+    const mobile = ios || /android/i.test(ua);
+    const nav = /CriOS/.test(ua) ? "chrome" : /FxiOS/.test(ua) ? "firefox" : /EdgiOS/.test(ua) ? "edge" : /SamsungBrowser/i.test(ua) ? "samsung" : "";
+    const vSafari = parseInt(((ua.match(/Version\/(\d+)/) || [])[1]) || "0", 10);
+    const FLECHE = '<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 8v34M16 30l16 18 16-18" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    function fleche(pos) {
+      document.querySelectorAll(".mm-fleche").forEach((e) => e.remove());
+      gate.style.paddingTop = ""; gate.style.paddingBottom = "";
+      if (!pos) return;
+      if (pos.indexOf("bas") === 0) gate.style.paddingBottom = "88px"; else gate.style.paddingTop = "88px";
+      const d = document.createElement("div"); d.className = "mm-fleche mm-fleche--" + pos; d.setAttribute("aria-hidden", "true"); d.innerHTML = FLECHE;
+      document.body.appendChild(d);
+    }
+    /* où est le bouton, et comment l'appeler, selon le téléphone */
+    function repere() {
+      if (ios) {
+        if (ipad) return { pos: "haut-droite", txt: 'Touche <strong>Partager</strong> ' + SHARE + ' en <strong>haut à droite</strong> de l’écran' };
+        if (nav === "chrome") return { pos: "haut-droite", txt: 'Touche <strong>Partager</strong> ' + SHARE + ' dans la barre d’adresse, en <strong>haut à droite</strong> (ou le menu <strong>⋯</strong> puis <strong>Partager</strong>)' };
+        if (nav === "firefox" || nav === "edge") return { pos: "", txt: 'Touche le menu <strong>⋯</strong> du navigateur, puis <strong>Partager</strong> ' + SHARE };
+        if (iphone && vSafari >= 26) return { pos: "bas-droite", txt: 'Touche <strong>⋯</strong> en <strong>bas à droite</strong>, puis <strong>Partager</strong> ' + SHARE };
+        return { pos: "bas-centre", txt: 'Touche <strong>Partager</strong> ' + SHARE + ' en <strong>bas de l’écran</strong>, au milieu' };
+      }
+      if (nav === "samsung") return { pos: "bas-droite", txt: 'Touche le menu <strong>≡</strong> en <strong>bas à droite</strong> de l’écran' };
+      if (mobile) return { pos: "haut-droite", txt: 'Touche le menu <strong>⋮</strong> en <strong>haut à droite</strong> de l’écran' };
+      return { pos: "", txt: 'Clique sur l’icône d’installation dans la <strong>barre d’adresse</strong> (ou sur le menu <strong>⋮</strong> du navigateur)' };
+    }
+    /* étapes à la main : seulement APRÈS le toucher sur « Installer », quand le navigateur n'a pas de bouton d'installation (iPhone, certains navigateurs) */
     function guide() {
       etape = "guide";
+      const r = repere();
+      fleche(r.pos); gate.classList.add("mm-gate--guide");
       if (ios) {
         titre.textContent = "Installe Mango Mame en 3 touches";
         corps.innerHTML = '<p>Sur iPhone et iPad, Apple demande de faire ces 3 touches soi-même :</p>' +
-          etapes(['Touche <strong>Partager</strong> ' + SHARE + ' (en bas de l’écran, ou en haut à droite)', 'Fais défiler et touche <strong>« Sur l’écran d’accueil »</strong> ' + PLUS, 'Touche <strong>Ajouter</strong>, puis ouvre <strong>Mango Mame</strong> depuis ton écran d’accueil']) +
-          '<p class="mm-gate__small">Tu ne vois pas « Sur l’écran d’accueil » ? Ouvre cette page dans Safari.</p>' + copier + petit;
+          etapes([r.txt, 'Fais défiler et touche <strong>« Sur l’écran d’accueil »</strong> ' + PLUS, 'Touche <strong>Ajouter</strong>, puis ouvre <strong>Mango Mame</strong> depuis ton écran d’accueil']) +
+          '<p class="mm-gate__small">Tu ne vois pas « Sur l’écran d’accueil » ? Ouvre cette page dans Safari.</p>' + copier;
       } else {
         titre.textContent = "Installe Mango Mame";
         corps.innerHTML = '<p>Ton navigateur n’a pas proposé le bouton d’installation. Fais-le avec son menu :</p>' +
-          etapes(['Touche le menu <strong>⋮</strong> de ton navigateur (sur ordinateur : l’icône d’installation dans la barre d’adresse)', 'Choisis <strong>« Installer l’application »</strong> ou <strong>« Ajouter à l’écran d’accueil »</strong>', 'Ouvre <strong>Mango Mame</strong> depuis ton écran d’accueil']) + copier + petit;
+          etapes([r.txt, 'Choisis <strong>« Installer l’application »</strong> ou <strong>« Ajouter à l’écran d’accueil »</strong>', 'Ouvre <strong>Mango Mame</strong> depuis ton écran d’accueil']) + copier + petit;
       }
       lierCopier();
     }
@@ -1004,9 +1044,11 @@ window.MANGO_MAME = {"titre":"Mango Mame","sous_titre":"Mon grand atelier de col
         titre.textContent = "Ouvre Mango Mame dans ton navigateur";
         corps.innerHTML = '<p>Cette page est ouverte dans une autre application (Facebook, Instagram, WhatsApp…). Pour installer Mango Mame, il faut l’ouvrir dans ' + (ios ? 'Safari' : 'Chrome') + '.</p>' +
           etapes(['Touche les trois points <strong>⋮</strong> ou <strong>···</strong> en haut', 'Choisis <strong>« Ouvrir dans le navigateur »</strong>']) + copier + petit;
+        fleche(ios ? "" : "haut-droite");
         lierCopier(); return;
       }
       if (etape === "guide") { guide(); return; }
+      fleche(""); gate.classList.remove("mm-gate--guide");
       titre.textContent = "Installe Mango Mame pour colorier";
       corps.innerHTML = '<p>Pour continuer, installe l’application. C’est gratuit, ça prend 10 secondes, et elle marche même sans Internet !</p>' + BOUTON + petit;
       $("mm-installer").onclick = async () => {
@@ -1020,7 +1062,7 @@ window.MANGO_MAME = {"titre":"Mango Mame","sous_titre":"Mon grand atelier de col
     }
     /* écran « Ouvrir l'application » : un seul bouton, pas d'autre choix que d'aller dans l'application */
     function ecranOuvrir(nouveau) {
-      fini = true;
+      fini = true; fleche(""); gate.classList.remove("mm-gate--guide");
       titre.textContent = nouveau ? "Bravo ! Mango Mame est installée !" : "Mango Mame est installée sur ton téléphone";
       const adresse = new URL("./?depuis=navigateur", location.href).href;
       corps.innerHTML = '<div class="mm-gate__ok" aria-hidden="true">🎉</div><p>Touche le bouton pour ouvrir l’application et commencer à colorier.</p>' +
