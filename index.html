@@ -933,6 +933,13 @@ window.MANGO_MAME = {"titre":"Mango Mame","sous_titre":"Mon grand atelier de col
     const lire = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
     const ecrire = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
     try { const t = new URLSearchParams(location.search).get("test"); if (t === "1") ecrire("mm-test", "1"); if (t === "0") localStorage.removeItem("mm-test"); } catch (e) {}
+    /* si une nouvelle version de l'application vient d'arriver pendant les premières secondes, on recharge une fois pour l'afficher */
+    try {
+      if ("serviceWorker" in navigator) {
+        const avait = !!navigator.serviceWorker.controller; let fait = false;
+        navigator.serviceWorker.addEventListener("controllerchange", () => { if (avait && !fait && performance.now() < 20000) { fait = true; location.reload(); } });
+      }
+    } catch (e) {}
     const reduit = dm("(prefers-reduced-motion: reduce)");
     const installee = () => dm("(display-mode: standalone)") || dm("(display-mode: fullscreen)") || dm("(display-mode: minimal-ui)") || navigator.standalone === true;
     const ios = /iphone|ipad|ipod/i.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
