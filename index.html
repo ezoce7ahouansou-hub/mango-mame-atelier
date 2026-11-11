@@ -1016,7 +1016,7 @@ window.MANGO_MAME = {"titre":"Mango Mame","sous_titre":"Mon grand atelier de col
     function schema(cle) {
       const M = {
         "safari-bas": ["bas", "Dans la barre du bas de Safari", '<span>‹</span><span>›</span>' + cible(SH) + '<span>▤</span><span>⧉</span>'],
-        "safari26": ["bas", "Dans la barre du bas de Safari", '<span>‹</span>' + champ("aA &nbsp; adresse") + cible("<b>⋯</b>")],
+        "safari26": ["bas", "Dans la barre d’adresse de Safari", '<span>‹</span><span class="mm-mock__champ">' + cible("<b>≡</b>") + '<span>adresse</span><span>↻</span></span><span>⧉</span>'],
         "ipad": ["haut", "Dans la barre du haut de Safari", '<span>▯</span><span>‹</span><span>›</span>' + champ("adresse") + cible(SH) + '<span>+</span><span>⧉</span>'],
         "chrome-ios": ["haut", "Dans la barre d’adresse de Chrome", champ("🔒 adresse", cible(SH))],
         "android": ["haut", "Dans la barre du haut de ton navigateur", champ("🔒 adresse") + '<span>⧉</span>' + cible("<b>⋮</b>")],
@@ -1031,7 +1031,7 @@ window.MANGO_MAME = {"titre":"Mango Mame","sous_titre":"Mon grand atelier de col
         if (ipad) return { m: "ipad", txt: 'Touche <strong>Partager</strong> ' + SHARE + ' en <strong>haut à droite</strong> de l’écran' };
         if (nav === "chrome") return { m: "chrome-ios", txt: 'Touche <strong>Partager</strong> ' + SHARE + ' dans la barre d’adresse (ou le menu <strong>⋯</strong> puis <strong>Partager</strong>)' };
         if (nav === "firefox" || nav === "edge") return { m: "", txt: 'Touche le menu <strong>⋯</strong> du navigateur, puis <strong>Partager</strong> ' + SHARE };
-        if (iphone && vSafari >= 26) return { m: "safari26", txt: 'Touche <strong>⋯</strong> en bas à droite, puis <strong>Partager</strong> ' + SHARE };
+        if (iphone && vSafari >= 26) return { m: "safari26", txt: 'Touche l’icône <strong>≡</strong> à gauche de la barre d’adresse, puis <strong>Partager</strong> ' + SHARE };
         return { m: "safari-bas", txt: 'Touche <strong>Partager</strong> ' + SHARE + ' en bas de l’écran, au milieu' };
       }
       if (nav === "samsung") return { m: "samsung", txt: 'Touche le menu <strong>≡</strong> en bas à droite de l’écran' };
