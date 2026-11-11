@@ -2,7 +2,7 @@
    La page d'accueil est toujours redemandée à Internet en premier (pour que chaque mise à jour arrive tout de suite),
    et la copie de l'appareil ne sert que s'il n'y a pas de réseau. Les dessins et icônes sont gardés dans l'appareil.
    Pour publier une nouvelle version de l'application, changez le numéro dans VERSION ci-dessous. */
-const VERSION = "v13";
+const VERSION = "v14";
 const CACHE = "mango-mame-atelier-" + VERSION;
 const FICHIERS = ["./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png"];
 
@@ -33,6 +33,7 @@ self.addEventListener("activate", (e) => {
 self.addEventListener("fetch", (e) => {
   const req = e.request;
   if (req.method !== "GET" || new URL(req.url).origin !== self.location.origin) return;
+  if (new URL(req.url).pathname.endsWith("/version.txt")) return; // toujours demandé à Internet
   // la page elle-même : Internet d'abord (4 s maximum), puis la copie de l'appareil
   if (req.mode === "navigate") {
     e.respondWith((async () => {
